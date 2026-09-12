@@ -8,8 +8,7 @@ import {SmartVault} from "../src/SmartVault.sol";
 contract DeploySmartVault is Script {
     function run() public {
         vm.startBroadcast();
-        
-        // Lock duration: 30 days
+
         SmartVault vault = new SmartVault(2592000);
         
         vm.stopBroadcast();
