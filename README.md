@@ -60,21 +60,30 @@ $ forge test
 No files changed, compilation skipped
 
 Ran 4 tests for test/SmartVault.t.sol:SmartVaultTest
+
 [PASS] testFuzzDeposit(uint256) (runs: 256, μ: 76474, ~: 76474)
+
 [PASS] testFuzzReceive(uint256) (runs: 256, μ: 76307, ~: 76307)
+
 [PASS] testFuzzSendEth(uint256) (runs: 256, μ: 119961, ~: 119961)
+
 [PASS] testFuzzWithdraw(uint256) (runs: 256, μ: 94691, ~: 94691)
+
 Suite result: ok. 4 passed; 0 failed; 0 skipped; finished in 423.57ms (1.00s CPU time)
 
 Ran 3 tests for test/MyNFT.t.sol:MyNFTTest
+
 [PASS] testFuzzMint(uint256) (runs: 256, μ: 95069, ~: 95069)
+
 [PASS] testFuzzMintRevertsIfInsufficientPayment(uint256) (runs: 256, μ: 20700, ~: 21119)
+
 [PASS] testFuzzWithdraw(uint256) (runs: 256, μ: 106148, ~: 106148)
+
 Suite result: ok. 3 passed; 0 failed; 0 skipped; finished in 427.34ms (537.35ms CPU time)
 
 Ran 2 test suites in 438.89ms (850.91ms CPU time): 7 tests passed, 0 failed, 0 skipped (7 total tests)
 
-Frontend
+#Frontend
 Two simple HTML frontends:
 
 frontend/vault.html - Connect wallet, deposit, withdraw, send ETH, pause/unpause
@@ -85,6 +94,7 @@ Both include event listeners for real-time updates.
 
 # Clone repo
 git clone https://github.com/bibekmgr1/SmartVault-MyNFT.git
+
 cd SmartVault-MyNFT
 
 # Install dependencies
