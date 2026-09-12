@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SmartVault Wallet</title>
+</head>
+<body>
+
+    <h1>SmartVault Wallet</h1>
+
+    <p>Status: <span id="status">Not connected</span></p>
+    <p>Your Balance: <span id="userBalance">0</span> ETH</p>
+    <p>Contract Balance: <span id="contractBalance">0</span> ETH</p>
+    <p>Can Withdraw: <span id="canWithdraw">--</span></p>
+    <p>Is Paused: <span id="isPaused">--</span></p>
+
+    <button id="connectBtn">Connect Wallet</button>
+
+    <hr>
+
+    <h2>Deposit</h2>
+    <input type="text" id="depositAmount" placeholder="0.01" value="0.01">
+    <button id="depositBtn" disabled>Deposit</button>
+
+    <hr>
+
+    <h2>Withdraw</h2>
+    <input type="text" id="withdrawAmount" placeholder="0.01" value="0.01">
+    <button id="withdrawBtn" disabled>Withdraw</button>
+
+    <hr>
+
+    <h2>Send ETH</h2>
+    <input type="text" id="friendAddress" placeholder="0xFriend...">
+    <input type="text" id="sendAmount" placeholder="0.01" value="0.01">
+    <button id="sendBtn" disabled>Send</button>
+
+    <hr>
+
+    <h2>Owner Controls</h2>
+    <button id="pauseBtn" disabled>Pause</button>
+    <button id="unpauseBtn" disabled>Unpause</button>
+
+    <hr>
+
+    <h2>Event Log</h2>
+    <p id="eventLog">No events yet</p>
+
+    <script src="https://unpkg.com/ethers@6.13.5/dist/ethers.umd.min.js"></script>
+
+    <script>
+        const contractAddress = "0x3e8784A26935c66865CCbFa3054bA256673DAe46";
+
+        const abi = [
+            "function deposit() public payable",
+            "function withdraw(uint256 _amount) public",
+            "function sendEth(address _friend, uint256 _amount) public",
+            "function pause() public",
+            "function unpause() public",
+            "function balances(address) view returns (uint256)",
+            "function getContractBalance() view returns (uint256)",
+            "function canWithdraw(address) view returns (bool)",
+            "function isPaused() view returns (bool)",
+            "function owner() view returns (address)",
+            
+            // Events
+            "event Deposited(address indexed user, uint256 amount)",
+            "event Withdrawn(address indexed user, uint256 amount)",
+            "event EthSent(address indexed from, address indexed to, uint256 amount)",
+            "event Paused(address indexed owner)",
+            "event Unpaused(address indexed owner)"
+        ];
+
+        let signer, contract, userAddress, contractOwner;
+
+        async function connect() {
+            if (!window.ethereum) return alert("Install MetaMask!");
+            await window.ethereum.request({ method: "eth_requestAccounts" });
+            const provider = new ethers.BrowserProvider(window.ethereum);
+            signer = await provider.getSigner();
+            userAddress = await signer.getAddress();
+            contract = new ethers.Contract(contractAddress, abi, signer);
+
+            document.getElementById("status").innerText = "Connected: " + userAddress;
+            document.getElementById("depositBtn").disabled = false;
+            document.getElementById("withdrawBtn").disabled = false;
+            document.getElementById("sendBtn").disabled = false;
+
+            contractOwner = await contract.owner();
+            if (userAddress.toLowerCase() === contractOwner.toLowerCase()) {
+                document.getElementById("pauseBtn").disabled = false;
+                document.getElementById("unpauseBtn").disabled = false;
+                document.getElementById("status").innerText += " (Owner)";
+            }
+
+            await refreshData();
+            setupEventListeners();
+        }
+
+        // Event listeners
+        function setupEventListeners() {
+            contract.on("Deposited", (user, amount) => {
+                const msg = user + " deposited " + ethers.formatEther(amount) + " ETH";
+                console.log(msg);
+                document.getElementById("eventLog").innerText = msg;
+                refreshData();
+            });
+
+            contract.on("Withdrawn", (user, amount) => {
+                const msg = user + " withdrew " + ethers.formatEther(amount) + " ETH";
+                console.log(msg);
+                document.getElementById("eventLog").innerText = msg;
+                refreshData();
+            });
+
+            contract.on("EthSent", (from, to, amount) => {
+                const msg = from + " sent " + ethers.formatEther(amount) + " ETH to " + to;
+                console.log(msg);
+                document.getElementById("eventLog").innerText = msg;
+                refreshData();
+            });
+
+            contract.on("Paused", (owner) => {
+                const msg = "Contract paused by " + owner;
+                console.log(msg);
+                document.getElementById("eventLog").innerText = msg;
+                refreshData();
+            });
+
+            contract.on("Unpaused", (owner) => {
+                const msg = "Contract unpaused by " + owner;
+                console.log(msg);
+                document.getElementById("eventLog").innerText = msg;
+                refreshData();
+            });
+
+            console.log("Event listeners set up!");
+        }
+
+        async function refreshData() {
+            const userBal = await contract.balances(userAddress);
+            const contractBal = await contract.getContractBalance();
+            const canWith = await contract.canWithdraw(userAddress);
+            const paused = await contract.isPaused();
+
+            document.getElementById("userBalance").innerText = ethers.formatEther(userBal);
+            document.getElementById("contractBalance").innerText = ethers.formatEther(contractBal);
+            document.getElementById("canWithdraw").innerText = canWith ? "Yes" : "No (Locked)";
+            document.getElementById("isPaused").innerText = paused ? "Paused" : "Active";
+        }
+
+        async function deposit() {
+            try {
+                const amount = document.getElementById("depositAmount").value;
+                const tx = await contract.deposit({ value: ethers.parseEther(amount) });
+                await tx.wait();
+                await refreshData();
+                alert("Deposited " + amount + " ETH");
+            } catch (error) {
+                alert("Error: " + error.message);
+            }
+        }
+
+        async function withdraw() {
+            try {
+                const amount = document.getElementById("withdrawAmount").value;
+                const tx = await contract.withdraw(ethers.parseEther(amount));
+                await tx.wait();
+                await refreshData();
+                alert("Withdrawn " + amount + " ETH");
+            } catch (error) {
+                alert("Error: " + error.message);
+            }
+        }
+
+        async function sendEth() {
+            try {
+                const friend = document.getElementById("friendAddress").value;
+                const amount = document.getElementById("sendAmount").value;
+                const tx = await contract.sendEth(friend, ethers.parseEther(amount));
+                await tx.wait();
+                await refreshData();
+                alert("Sent " + amount + " ETH");
+            } catch (error) {
+                alert("Error: " + error.message);
+            }
+        }
+
+        async function pause() {
+            try {
+                const tx = await contract.pause();
+                await tx.wait();
+                await refreshData();
+                alert("Contract Paused");
+            } catch (error) {
+                alert("Error: " + error.message);
+            }
+        }
+
+        async function unpause() {
+            try {
+                const tx = await contract.unpause();
+                await tx.wait();
+                await refreshData();
+                alert("Contract Unpaused");
+            } catch (error) {
+                alert("Error: " + error.message);
+            }
+        }
+
+        document.getElementById("connectBtn").onclick = connect;
+        document.getElementById("depositBtn").onclick = deposit;
+        document.getElementById("withdrawBtn").onclick = withdraw;
+        document.getElementById("sendBtn").onclick = sendEth;
+        document.getElementById("pauseBtn").onclick = pause;
+        document.getElementById("unpauseBtn").onclick = unpause;
+    </script>
+</body>
+</html>
