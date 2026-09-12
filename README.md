@@ -1,70 +1,95 @@
-<<<<<<< HEAD
-## Foundry
+# SmartVault + MyNFT
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+A Web3 project with two Solidity smart contracts deployed on Sepolia testnet, complete with Foundry tests and frontend interfaces.
 
-Foundry consists of:
+## Deployed Contracts (Sepolia)
 
-- **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
-- **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
-- **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
-- **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+| Contract | Address |
+|----------|---------|
+| **SmartVault** | [0x3e8784A26935c66865CCbFa3054bA256673DAe46](https://sepolia.etherscan.io/address/0x3e8784A26935c66865CCbFa3054bA256673DAe46) |
+| **MyNFT** | [0x4692eE780607Dd5b327e713a214477a454C49A7E](https://sepolia.etherscan.io/address/0x4692eE780607Dd5b327e713a214477a454C49A7E) |
 
-## Documentation
+## Features
 
-https://book.getfoundry.sh/
+### SmartVault (Wallet)
+- Deposit ETH into contract
+- Withdraw ETH (with lock duration)
+- Send ETH to another address
+- Pause/Unpause (owner only)
+- Custom errors for gas optimization
+- CEI pattern for reentrancy protection
 
-## Usage
+### MyNFT (ERC-721)
+- Mint NFTs with payment
+- Withdraw revenue (owner only)
+- Max supply: 10,000
+- Gas optimized (custom errors, constants, unchecked blocks)
+- Fuzz tested with Foundry
 
-### Build
+## Tech Stack
+- **Solidity** 0.8.19
+- **Foundry** (testing & deployment)
+- **OpenZeppelin** (ERC-721, Ownable)
+- **Ethers.js v6** (frontend)
 
-```shell
-$ forge build
-```
+## Project Structure
+SmartVault-MyNFT/
+├── src/
+│ ├── SmartVault.sol
+│ └── MyNFT.sol
+├── test/
+│ ├── SmartVault.t.sol
+│ └── MyNFT.t.sol
+├── script/
+│ ├── DeploySmartVault.s.sol
+│ └── DeployMyNFT.s.sol
+├── frontend/
+│ ├── vault.html
+│ └── nft.html
+└── README.md
 
-### Test
+## Tests
 
-```shell
-$ forge test
-```
+Run all tests:
+forge test
+Result:
 
-### Format
+bibek@DESKTOP-5QO8H22 MINGW64 ~/SmartVault (main)
+$ forge test 
+[⠒] Compiling...
+No files changed, compilation skipped
 
-```shell
-$ forge fmt
-```
+Ran 4 tests for test/SmartVault.t.sol:SmartVaultTest
+[PASS] testFuzzDeposit(uint256) (runs: 256, μ: 76474, ~: 76474)
+[PASS] testFuzzReceive(uint256) (runs: 256, μ: 76307, ~: 76307)
+[PASS] testFuzzSendEth(uint256) (runs: 256, μ: 119961, ~: 119961)
+[PASS] testFuzzWithdraw(uint256) (runs: 256, μ: 94691, ~: 94691)
+Suite result: ok. 4 passed; 0 failed; 0 skipped; finished in 423.57ms (1.00s CPU time)
 
-### Gas Snapshots
+Ran 3 tests for test/MyNFT.t.sol:MyNFTTest
+[PASS] testFuzzMint(uint256) (runs: 256, μ: 95069, ~: 95069)
+[PASS] testFuzzMintRevertsIfInsufficientPayment(uint256) (runs: 256, μ: 20700, ~: 21119)
+[PASS] testFuzzWithdraw(uint256) (runs: 256, μ: 106148, ~: 106148)
+Suite result: ok. 3 passed; 0 failed; 0 skipped; finished in 427.34ms (537.35ms CPU time)
 
-```shell
-$ forge snapshot
-```
+Ran 2 test suites in 438.89ms (850.91ms CPU time): 7 tests passed, 0 failed, 0 skipped (7 total tests)
 
-### Anvil
+Frontend
+Two simple HTML frontends:
 
-```shell
-$ anvil
-```
+frontend/vault.html - Connect wallet, deposit, withdraw, send ETH, pause/unpause
 
-### Deploy
+frontend/nft.html - Connect wallet, mint NFT, withdraw revenue
 
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
+Both include event listeners for real-time updates.
 
-### Cast
+# Clone repo
+git clone https://github.com/bibekmgr1/SmartVault-MyNFT.git
+cd SmartVault-MyNFT
 
-```shell
-$ cast <subcommand>
-```
+# Install dependencies
+forge install
 
-### Help
+# Run tests
+forge test
 
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
-=======
-# SmartVault-MyNFT
->>>>>>> 1b6baa5b1c6996fbe884a3eb3932391744aa5041
